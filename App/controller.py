@@ -24,6 +24,43 @@ import config as cf
 import model
 import csv
 
+def initCatalog(tipo_lista):
+    catalog = model.newCatalog(tipo_lista)
+    return catalog
+
+
+def loadData(catalog):
+    loadArtists(catalog)
+    loadArtworks(catalog)
+    sortDates(catalog)
+
+
+def loadArtists(catalog):
+    artistFile=cf.data_dir+"Artists-utf8-small.csv"
+    input_file = csv.DictReader(open(artistFile, encoding='utf-8'))
+    for artist in input_file:
+        model.addArtist(catalog,artist)
+
+        
+
+def loadArtworks(catalog):
+    artworkFile=cf.data_dir+"Artworks-utf8-small.csv"
+    input_file = csv.DictReader(open(artworkFile, encoding='utf-8'))
+    for artwork in input_file:
+        model.addArtwork(catalog,artwork)
+        model.addMedium(catalog,artwork)
+
+
+# Funciones de ordenamiento
+
+def sortDates(catalog):
+    model.sortDates(catalog)
+
+def sortArtDates(catalog,cant,method):
+    return model.sortArtworksDates(catalog,cant,method)
+
+def masAntiguos(catalog,medium,cant):
+    return model.masAntiguos(catalog,medium,cant)
 
 """
 El controlador se encarga de mediar entre la vista y el modelo.

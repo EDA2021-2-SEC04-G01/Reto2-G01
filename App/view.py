@@ -20,6 +20,7 @@
  * along withthis program.  If not, see <http://www.gnu.org/licenses/>.
  """
 
+
 import config as cf
 import sys
 import controller
@@ -37,8 +38,10 @@ operación solicitada
 def printMenu():
     print("Bienvenido")
     print("1- Cargar información en el catálogo")
-    print("2- ")
-
+    print("2- las n obras más antiguas para un medio específico")
+def initCatalog(tipo_lista):
+    
+    return controller.initCatalog(tipo_lista)
 catalog = None
 
 """
@@ -48,10 +51,15 @@ while True:
     printMenu()
     inputs = input('Seleccione una opción para continuar\n')
     if int(inputs[0]) == 1:
+        catalog = initCatalog('ARRAY_LIST')
+        controller.loadData(catalog)
         print("Cargando información de los archivos ....")
 
     elif int(inputs[0]) == 2:
-        pass
+        medium = input("Escriba un medio: ")
+        cant = int(input("Escriba una cantidad: "))
+        print(controller.masAntiguos(catalog,medium,cant))
+        
 
     else:
         sys.exit(0)
