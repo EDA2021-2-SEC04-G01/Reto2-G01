@@ -32,7 +32,7 @@ def initCatalog(tipo_lista):
 def loadData(catalog):
     loadArtists(catalog)
     loadArtworks(catalog)
-    sortDates(catalog)
+    # sortDates(catalog)
 
 
 def loadArtists(catalog):
@@ -40,6 +40,7 @@ def loadArtists(catalog):
     input_file = csv.DictReader(open(artistFile, encoding='utf-8'))
     for artist in input_file:
         model.addArtist(catalog,artist)
+        
 
         
 
@@ -49,12 +50,14 @@ def loadArtworks(catalog):
     for artwork in input_file:
         model.addArtwork(catalog,artwork)
         model.addMedium(catalog,artwork)
+        model.addNation(catalog,artwork,catalog['artists'])
+
 
 
 # Funciones de ordenamiento
 
-def sortDates(catalog):
-    model.sortDates(catalog)
+# def sortDates(catalog):
+#     model.sortDates(catalog)
 
 def sortArtDates(catalog,cant,method):
     return model.sortArtworksDates(catalog,cant,method)

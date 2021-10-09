@@ -38,7 +38,7 @@ from DISClib.Algorithms.Sorting import quicksort as qsort
 from DISClib.Algorithms.Sorting import mergesort as msort
 assert cf
 from tabulate import tabulate
-import textwrap 
+import textwrap
 import time
 """
 Se define la estructura de un catálogo de videos. El catálogo tendrá dos listas, una para los videos, otra para las categorias de
@@ -54,27 +54,50 @@ debido a que se usaron array list, lo que hace que funcione diferente el ordenam
 def newCatalog(tipo_lista):
     catalog = {
         'artworks':lt.newList(tipo_lista),
-        'artists':lt.newList(tipo_lista,cmpfunction=compareArtists),
+        'artists':mp.newMap(50000,maptype='CHAINING',loadfactor=0.5),
         'technique':lt.newList(tipo_lista),
-        'nationalities': lt.newList(tipo_lista,cmpfunction=compareNation),
+        'nationalities':mp.newMap(200,maptype='CHAINING',loadfactor=0.5,comparefunction=compareNation),
+        # 'nationalities': lt.newList(tipo_lista,cmpfunction=compareNation),
         'mediums': mp.newMap(50000,maptype='CHAINING',loadfactor=0.5,comparefunction=compareMediums)
-    }   
+    }
     return catalog
 # Funciones para agregar informacion al  catalogo
 
-
 def addArtist(catalog,artist):
-    lt.addLast(catalog['artists'],artist)
+    # print(type(artist))
+    id=artist['ConstituentID']
+    # print(id)
+    hola= mp.newMap
+    mp.put(catalog['artists'],str(id),artist)
 
 
 
 def addArtwork(catalog,artwork):
     lt.addLast(catalog['artworks'],artwork)
-    
+
+
+def addNation(catalog,artwork,mpArtists):
+    artistList=(artwork['ConstituentID'].replace('[','').replace(']','')).split(',')
+    if artistList!=None or artistList!=[]:
+        for artist in artistList:
+            artist = artist.strip()
+            if mp.contains(mpArtists,artist):
+                nationality = mp.get(mpArtists,artist)['value']['Nationality']
+
+                if nationality=='' or nationality==None:
+                    nationality='Nationality unknown'
+
+                if mp.get(catalog['nationalities'],nationality):
+                    artworks=me.getValue(mp.get(catalog['nationalities'],nationality))
+                else:
+                    artworks = lt.newList('SINGLE_LINKED')
+                lt.addLast(artworks,artwork)
+                mp.put(catalog['nationalities'],nationality,artworks)
+
 def addMedium(catalog,artwork):
     if mp.get(catalog['mediums'],artwork['Medium']):
         artworks= me.getValue(mp.get(catalog['mediums'],artwork['Medium']))
-        
+
     else:
         artworks = lt.newList('SINGLE_LINKED')
     lt.addLast(artworks,artwork)
@@ -93,12 +116,18 @@ def compareMediums(artworkMedium,entry):
         return 0
     elif artworkMedium>mediumentry:
         return 1
-    
+
     return -1
 
+def compareNation(artistNation,entry):
+    nationEntry=me.getKey(entry)
+    if nationEntry == artistNation:
+        return 0
+    return -1
 
-def compareArtists(artistid,artist):
-    if(str(artistid) == str(artist['ConstituentID'])):
+def compareArtists(artistid,entry):
+    artistEntry=me.getKey(entry)
+    if str(artistid) == str(artistEntry):
         return 0
     return -1
 
@@ -108,7 +137,7 @@ def compareArtworks(artwork1,artwork):
     return -1
 
 def compareQuantity(nation1,nation2):
-    return lt.size(nation1['artworks'])>lt.size(nation2['artworks'])
+    return nation1['size'] > nation2['size']
 
 def compareFechas(artist1,artist2):
     return (artist1['BeginDate']<artist2['BeginDate'])
@@ -122,15 +151,11 @@ def comparePrices(artwork1,artwork2):
 def compareArtDates(art1,art2):
     return (art1['DateAcquired']<art2['DateAcquired'])
 
-def compareNation(nation1,nation):
-    if(nation1 == nation['nationality']):
-        return 0
-    return -1
 
 # Funciones de ordenamiento
 
-def sortDates(catalog):
-    sa.sort(catalog['artists'],compareFechas)
+# def sortDates(catalog):
+#     sa.sort(catalog['artists'],compareFechas)
 
 def sortArtYears(catalog):
     msort.sort(catalog['artworks'],compareYears)
@@ -169,13 +194,13 @@ def cronoArtist(catalog, inicio, fin):
 
     FiltredList=lt.newList()
     for artist in lt.iterator(catalog['artists']):
-        
+
         if int(artist["BeginDate"]) in range(inicio,fin+1):
-    
+
             lt.addLast(FiltredList,artist)
         elif int(artist["BeginDate"]) > fin:
             break
-    
+
     if lt.isEmpty(FiltredList):
 
         return "No hay artistas en el rango indicado"
@@ -206,31 +231,31 @@ def cronoArtwork(catalog,sublista, inicio, fin):
     FiltredList=lt.newList()
     for artwork in lt.iterator(sublista):
 
-      
+
         if artwork["DateAcquired"] != '':
             if int(artwork["DateAcquired"].replace('-','')) in range(inicio,fin+1):
 
 #               Esto de aquí es para sacar los artistas únicos y luego contarlos, al final.
                 idArtist = artwork['ConstituentID'].replace('[','').replace(']','').split(',')
-        
+
                 for id in idArtist:
                     id=id.strip()
                     pos = lt.isPresent(artists,id)
-                    
+
                     if pos!=0:
                         artist =(lt.getElement(artists,pos))['DisplayName']
                         #En esta linea nos aseguramos de que no hayan artistas repetidos
                         if lt.isPresent(artistList,artist)==0: lt.addLast(artistList,artist)
-                     
-                
+
+
                 lt.addLast(FiltredList,artwork)
-                
+
                 if ('purchase' in artwork['CreditLine'].lower()):
                     purchasedCant+=1
-#           Aquí hacemos que el ciclo se rompa porque ya está ordenado, así que es mejor detener el ciclo si se sabe que no hay más después        
-            elif int((artwork['DateAcquired'].replace('-','')).strip()) > fin: 
-                break   
-    
+#           Aquí hacemos que el ciclo se rompa porque ya está ordenado, así que es mejor detener el ciclo si se sabe que no hay más después
+            elif int((artwork['DateAcquired'].replace('-','')).strip()) > fin:
+                break
+
     if lt.isEmpty(FiltredList):
         return "No hay obras de arte en el rango indicado"
     else:
@@ -248,15 +273,15 @@ def cronoArtwork(catalog,sublista, inicio, fin):
 
 #REQ 3 ELABORADO POR DANIEL MOLANO - 202012695
 def artistPerTecnique(catalog,nombre):
-    
+
     artistID=None
-    
+
     for name in lt.iterator(catalog['artists']):
         artistName = name['DisplayName']
         if nombre in artistName:
             artistID=name['ConstituentID']
             break
-        
+
     if artistID == None:
         return "No se encontró un artista con ese nombre."
     else:
@@ -264,12 +289,12 @@ def artistPerTecnique(catalog,nombre):
         listTecnica=lt.newList()
         listaArtworkMax=lt.newList()
         listaAllArtworks=lt.newList()
-        
+
         for artWork in lt.iterator(catalog['artworks']):
             artWorkArtist=artWork['ConstituentID'].replace('[','').replace(']','').replace(' ','').split(',')
-                        
+
             if artistID in artWorkArtist:
-                
+
                 mayor={}
                 lt.addLast(listaAllArtworks, artWork['Title'])
                 diccReturn['Obras']=listaAllArtworks
@@ -281,7 +306,7 @@ def artistPerTecnique(catalog,nombre):
                 if artWork['Medium']==diccReturn['Tecnica mayor']:
                     lt.addLast(listaArtworkMax,artWork['Title'])
                     diccReturn['ObrasMayor']=listaArtworkMax
-                
+
         return diccReturn
 
 
@@ -303,73 +328,112 @@ def contadorTecnica(mayor,tecnica):
     return maximo
 
 
-    
-    
-            
+
+
+
 #Comienza el Req4.  ELABORADO POR: GERMÁN LEONARDO MORENO CAINABA. COD->202116701
 def ordenNacionalidad(catalog):
-    artists = catalog['artists']
-    for artwork in lt.iterator(catalog['artworks']):
+    nacionalidades=mp.keySet(catalog['nationalities'])
+    listNacionalidades=lt.newList()
+    listArtworksEnd=[]
+    listCant=[]
 
-        idArtist = artwork['ConstituentID'].replace('[','').replace(']','').split(',')
-        for id in idArtist:
-            id=id.strip()
-            pos = lt.isPresent(artists,id)  
-            artist = lt.getElement(artists,pos)
-            nation = artist['Nationality']
 
-            addNation(catalog,nation,artwork)
-  
-    sortNation(catalog['nationalities'])
 
-def nationArworks(catalog):
-#       Aquí inicio declarando las variables con las que voy a trabajar, obteniendo del catálogo lo que 
-#       se necesita y demás.        
-        listCant = []
-        listArtworksEnd=[]
-        ordenNacionalidad(catalog)
-        nacionalidadesFull=catalog['nationalities']
-        nationMajor=(lt.getElement(nacionalidadesFull,1))['artworks'] #Tomo la posición 1 porque del model ya sale ordenado de mayor a menor.
+    for nation in lt.iterator(nacionalidades):
+        nation = (mp.get(catalog['nationalities'],nation)['key'])
+        size = lt.size(mp.get(catalog['nationalities'],nation)['value'])
+        lt.addLast(listNacionalidades,{'nation':nation,'size':size})
+    sortNation(listNacionalidades)
 
-#       Este ciclo se encarga de recorrer todos los elementos de la nacionalidad con mayor cantidad de obras.        
-        for position in range(1,4):
-            selectInfo(position,nationMajor,listArtworksEnd,catalog,False,False)
+    nameMayor = lt.firstElement(listNacionalidades)['nation']
+    mayor = mp.get(catalog['nationalities'],lt.firstElement(listNacionalidades)['nation'])['value']
 
-        for position in range(lt.size(nacionalidadesFull)-3,lt.size(nacionalidadesFull)):
-            selectInfo(position,nationMajor,listArtworksEnd,catalog,False,False)
-            
+    for position in range(1,4):
+        selectInfo(position,mayor,listArtworksEnd,catalog,False,False)
+
+    for position in range(lt.size(mayor)-3,lt.size(mayor)):
+        selectInfo(position,mayor,listArtworksEnd,catalog,False,False)
+
 #       Se hacen los headers, para ponerlos en la tabla
-        headers = ['ObjectID','Title','Artist(s)','Medium','Dimensions','Date','Department','Classification','URL']
+    headers = ['ObjectID','Title','Artist(s)','Medium','Dimensions','Date','Department','Classification','URL']
 #       Se crea la tabla pasándole como parámetro la lista grande, los headers creados al final y format grid para que se vea más como una tabla.
-        tabla=(tabulate(listArtworksEnd, headers=headers, tablefmt='grid',numalign='center'))
+    tabla=(tabulate(listArtworksEnd, headers=headers, tablefmt='grid',numalign='center'))
 
-        for position in range(1,11):
-            nation = lt.getElement(nacionalidadesFull,position)
-            size = lt.size(nation['artworks'])
-            listCant.append([nation['nationality'],size])
+    for position in range(1,11):
+        nation = lt.getElement(listNacionalidades,position)
+        size = nation['size']
+        listCant.append([nation['nation'],size])
 
-        completeNationMajor = lt.getElement(nacionalidadesFull,1)
-        tablaCant = tabulate(listCant,headers=['Nationality','Artworks'],tablefmt='grid',numalign='right')
-        return (tablaCant,tabla,completeNationMajor['nationality'],lt.size(completeNationMajor['artworks']))
+    tablaCant = tabulate(listCant,headers=['Nationality','Artworks'],tablefmt='grid',numalign='right')
+    return (tabla,tablaCant)
 
-def newNation(nationality):
-    nation = {'nationality':nationality,'artworks':lt.newList('ARRAY_LIST',compareArtworks)}
-    return nation
 
-def addNation(catalog,nation_original,artwork):
-    if nation_original=="":
-        nation_original="Nationality unknown"
 
-    posnation = lt.isPresent(catalog['nationalities'], nation_original)
-    if posnation > 0:
-        nation = lt.getElement(catalog['nationalities'], posnation)
+    return listNacionalidades
 
-    else:
-        nation = newNation(nation_original)
-        lt.addLast(catalog['nationalities'], nation)
-  
-    lt.addLast(nation['artworks'], artwork)
-#↑↑↑Aquí termina el req4.↑↑↑
+#     artists = catalog['artists']
+#     for artwork in lt.iterator(catalog['artworks']):
+
+#         idArtist = artwork['ConstituentID'].replace('[','').replace(']','').split(',')
+#         for id in idArtist:
+#             id=id.strip()
+#             pos = lt.isPresent(artists,id)
+#             artist = lt.getElement(artists,pos)
+#             nation = artist['Nationality']
+
+#             addNation(catalog,nation,artwork)
+
+#     sortNation(catalog['nationalities'])
+
+# def nationArworks(catalog):
+# #       Aquí inicio declarando las variables con las que voy a trabajar, obteniendo del catálogo lo que
+# #       se necesita y demás.
+#         listCant = []
+#         listArtworksEnd=[]
+#         ordenNacionalidad(catalog)
+#         nacionalidadesFull=catalog['nationalities']
+#         nationMajor=(lt.getElement(nacionalidadesFull,1))['artworks'] #Tomo la posición 1 porque del model ya sale ordenado de mayor a menor.
+
+# #       Este ciclo se encarga de recorrer todos los elementos de la nacionalidad con mayor cantidad de obras.
+#         for position in range(1,4):
+#             selectInfo(position,nationMajor,listArtworksEnd,catalog,False,False)
+
+#         for position in range(lt.size(nacionalidadesFull)-3,lt.size(nacionalidadesFull)):
+#             selectInfo(position,nationMajor,listArtworksEnd,catalog,False,False)
+
+# #       Se hacen los headers, para ponerlos en la tabla
+#         headers = ['ObjectID','Title','Artist(s)','Medium','Dimensions','Date','Department','Classification','URL']
+# #       Se crea la tabla pasándole como parámetro la lista grande, los headers creados al final y format grid para que se vea más como una tabla.
+#         tabla=(tabulate(listArtworksEnd, headers=headers, tablefmt='grid',numalign='center'))
+
+#         for position in range(1,11):
+#             nation = lt.getElement(nacionalidadesFull,position)
+#             size = lt.size(nation['artworks'])
+#             listCant.append([nation['nationality'],size])
+
+#         completeNationMajor = lt.getElement(nacionalidadesFull,1)
+#         tablaCant = tabulate(listCant,headers=['Nationality','Artworks'],tablefmt='grid',numalign='right')
+#         return (tablaCant,tabla,completeNationMajor['nationality'],lt.size(completeNationMajor['artworks']))
+
+# def newNation(nationality):
+#     nation = {'nationality':nationality,'artworks':lt.newList('ARRAY_LIST',compareArtworks)}
+#     return nation
+
+# def addNation(catalog,nation_original,artwork):
+#     if nation_original=="":
+#         nation_original="Nationality unknown"
+
+#     posnation = lt.isPresent(catalog['nationalities'], nation_original)
+#     if posnation > 0:
+#         nation = lt.getElement(catalog['nationalities'], posnation)
+
+#     else:
+#         nation = newNation(nation_original)
+#         lt.addLast(catalog['nationalities'], nation)
+
+#     lt.addLast(nation['artworks'], artwork)
+# #↑↑↑Aquí termina el req4.↑↑↑
 
 # Req 5
 def check_none(artwork,clave):
@@ -405,7 +469,7 @@ def precioTransporte(catalog,department):
             leng =  check_none(artwork,'Length (cm)')
             width =  check_none(artwork,'Width (cm)')
             peso=0
-            if artwork['Weight (kg)']!='' and artwork['Weight (kg)']!=None: 
+            if artwork['Weight (kg)']!='' and artwork['Weight (kg)']!=None:
                 peso =  float(artwork['Weight (kg)'])
                 estimado_peso+=peso
 
@@ -414,7 +478,7 @@ def precioTransporte(catalog,department):
                 if dato!=0:
                     no_ceros+=1
             if no_ceros>=2 :
-                
+
                 prof = cambiar_uno(prof)
                 height = cambiar_uno(height)
                 leng = cambiar_uno(leng)
@@ -423,7 +487,7 @@ def precioTransporte(catalog,department):
                     rad = circ/2*m.pi
                 elif diam!=0:
                     rad = diam/2
-                    
+
                 if rad != 0:
                     op1 = m.pow(rad,2)*m.pi*height*72
 
@@ -441,7 +505,7 @@ def precioTransporte(catalog,department):
     sortArtPrice(obrasTransport)
     for pos in range(1,6):
         selectInfo(pos,obrasTransport,listbyPrice,catalog,True,False)
-    
+
     sortArtYears(catalog)
     for pos in range(1,6):
         selectInfo(pos,obrasTransport,listbyDate,catalog,True,False)
@@ -450,9 +514,9 @@ def precioTransporte(catalog,department):
     headers = ['ObjectID','Title','Artist(s)','Medium','Dimensions','Date','TransCost','Classification','URL']
 
     tablePrice = tabulate(listbyPrice, headers=headers, tablefmt='grid',numalign='center')
-    
+
     tableDates = tabulate(listbyDate, headers=headers, tablefmt='grid',numalign='center')
-    
+
     return (lt.size(obrasTransport),round(estimado_peso,3),round(precio,3),tablePrice,tableDates)
 #Termina el Req 5
 
@@ -503,7 +567,7 @@ def newExpo(artworks,begin,end,area,catalog):
          selectInfo(pos,list_artworks,listArtworksEnd,catalog,False,True)
 
     table = tabulate(listArtworksEnd, headers=headers, tablefmt='grid',numalign='center')
-                    
+
 
     return (total,lt.size(list_artworks),round(actual_area,3),table)
 #↑↑↑Termina el Req 6↑↑↑
@@ -554,13 +618,13 @@ def selectInfo(position,ListArtworks,FiltredList,catalog,prices:bool,areas:bool)
 #       Aquí se recorren internamente los artistas que tenga cada obra para luego buscarlos en el archivo artists y sacar sus nombres.
         artists = ""
         idArtist = artwork['ConstituentID'].replace('[','').replace(']','').split(',') #Hago lo de artwork['ConstituentID'].replace('[','').replace(']','') para quitarle los corchetes []
-        for AuthorID in idArtist: 
+        for AuthorID in idArtist:
             AuthorID=AuthorID.strip() #Strip quita espacios innecesarios
-            artistPos = lt.isPresent(catalog['artists'],AuthorID)
-            if artistPos != 0: 
-                artist = (lt.getElement(catalog['artists'],artistPos))['DisplayName'] 
+            if mp.contains(catalog['artists'],AuthorID):
+                artist = (mp.get(catalog['artists'],AuthorID)['value'])['DisplayName']
 
-#           Este if solo es para separar por comas si hay varios artistas, para no iniciar con coma si está vacío.                
+
+#           Este if solo es para separar por comas si hay varios artistas, para no iniciar con coma si está vacío.
             if artists=="":
                 artists+=artist
             else:

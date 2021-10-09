@@ -24,10 +24,12 @@
 import config as cf
 import sys
 import controller
+import model
 from DISClib.ADT import list as lt
 assert cf
-
-
+from DISClib.ADT import map as mp
+import sys
+sys.setrecursionlimit(5000)
 """
 La vista se encarga de la interacción con el usuario
 Presenta el menu de opciones y por cada seleccion
@@ -59,6 +61,16 @@ while True:
         medium = input("Escriba un medio: ")
         cant = int(input("Escriba una cantidad: "))
         print(controller.masAntiguos(catalog,medium,cant))
+        
+
+    elif int(inputs[0]) == 4:
+        print(model.ordenNacionalidad(catalog)[0])
+        print(model.ordenNacionalidad(catalog)[1])
+
+    elif int(inputs[0]) == 0:
+        # print(mp.keySet(catalog['nationalities']))
+        for key in lt.iterator(mp.keySet(catalog['nationalities'])):
+            print(key,lt.size(mp.get(catalog['nationalities'],key)['value']))
         
 
     else:
