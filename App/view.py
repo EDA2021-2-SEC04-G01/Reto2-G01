@@ -63,14 +63,18 @@ while True:
         print(controller.masAntiguos(catalog,medium,cant))
         
 
-    elif int(inputs[0]) == 4:
+    elif int(inputs[0]) == 5:
         print(model.ordenNacionalidad(catalog)[0])
         print(model.ordenNacionalidad(catalog)[1])
 
     elif int(inputs[0]) == 0:
-        # print(mp.keySet(catalog['nationalities']))
-        for key in lt.iterator(mp.keySet(catalog['nationalities'])):
-            print(key,lt.size(mp.get(catalog['nationalities'],key)['value']))
+        print(model.cronoArtist(catalog,1920,1985))
+        # print('\n')
+        # for i in lt.iterator(mp.keySet(catalog['dateArtists'])):
+        #     print(i)
+        # # print(mp.keySet(catalog['nationalities']))
+        # for key in lt.iterator(mp.keySet(catalog['nationalities'])):
+        #     print(key,lt.size(mp.get(catalog['nationalities'],key)['value']))
         
 
     else:
