@@ -29,6 +29,7 @@ from DISClib.ADT import list as lt
 assert cf
 from DISClib.ADT import map as mp
 import sys
+import time
 sys.setrecursionlimit(5000)
 """
 La vista se encarga de la interacción con el usuario
@@ -40,10 +41,11 @@ operación solicitada
 def printMenu():
     print("Bienvenido")
     print("1- Cargar información en el catálogo")
-    print("2- las n obras más antiguas para un medio específico")
-def initCatalog(tipo_lista):
+    print("2- las n obras más antiguas para un medio específico.")
+    print("9- Cantidad de obras para una nacionalidad específica.")
+def initCatalog():
     
-    return controller.initCatalog(tipo_lista)
+    return controller.initCatalog()
 catalog = None
 
 """
@@ -53,9 +55,14 @@ while True:
     printMenu()
     inputs = input('Seleccione una opción para continuar\n')
     if int(inputs[0]) == 1:
-        catalog = initCatalog('ARRAY_LIST')
+        start_time = time.process_time()
+        catalog = initCatalog()
         controller.loadData(catalog)
         print("Cargando información de los archivos ....")
+
+        stop_time = time.process_time()
+        elapsed_time_mseg = (stop_time - start_time)*1000
+        print(elapsed_time_mseg)    
 
     elif int(inputs[0]) == 2:
         medium = input("Escriba un medio: ")
@@ -66,6 +73,15 @@ while True:
     elif int(inputs[0]) == 5:
         print(model.ordenNacionalidad(catalog)[0])
         print(model.ordenNacionalidad(catalog)[1])
+
+
+    elif int(inputs[0]) == 7:
+        print(mp.valueSet(catalog['artworksArtists']))
+
+    elif int(inputs[0]) == 9:
+        nation = input("Escriba una nacionalidad: ")
+        cantidad = controller.cantNationality(catalog,nation)
+        print("La cantidad de obras para la nacionalidad {} es {}.".format(nation,cantidad))
 
     elif int(inputs[0]) == 0:
         print(model.cronoArtist(catalog,1920,1985))

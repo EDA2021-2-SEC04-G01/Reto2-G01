@@ -51,18 +51,31 @@ debido a que se usaron array list, lo que hace que funcione diferente el ordenam
 """
 # Construccion de modelos
 
-def newCatalog(tipo_lista):
+def newCatalog():
     catalog = {
-        'artworks':lt.newList(tipo_lista),
-        'artists':mp.newMap(50000,maptype='CHAINING',loadfactor=0.5),
-        'technique':lt.newList(tipo_lista),
-        'nationalities':mp.newMap(200,maptype='CHAINING',loadfactor=0.5,comparefunction=compareNation),
-        'mediums': mp.newMap(50000,maptype='CHAINING',loadfactor=0.5,comparefunction=compareMediums),
-        'dateArtists': mp.newMap(50000,maptype='CHAINING',loadfactor=0.5)
+        'artworks':lt.newList('ARRAY_LIST'),
+        'artists':mp.newMap(20000,maptype='CHAINING',loadfactor=0.5),
+        'nationalities':mp.newMap(200,maptype='PROBING',loadfactor=0.8,comparefunction=compareNation),
+        'mediums': mp.newMap(50000,maptype='PROBING',loadfactor=0.8,comparefunction=compareMediums),
+        'dateArtists': mp.newMap(5000,maptype='CHAINING',loadfactor=0.5),
+        'artworksArtists':mp.newMap(20000,maptype='CHAINING',loadfactor=0.5)
     }
     return catalog
 # Funciones para agregar informacion al  catalogo
 
+def addArtworksArtist(catalog,artwork):
+    artists = catalog['artists']
+    medium = artwork['Medium']
+    idArtist = artwork['ConstituentID'].replace('[','').replace(']','').split(',')
+    for currentArtist in idArtist:
+        currentArtist=currentArtist.strip() #Strip quita espacios innecesarios
+
+        if mp.contains(catalog['artworksArtists'],currentArtist): listArtwork=mp.get(catalog['artworksArtists'],currentArtist)['value']
+        else:listArtwork=lt.newList('SINGLE_LINKED')
+        
+        lt.addLast(listArtwork,artwork)
+        mp.put(catalog['artworksArtists'],currentArtist,listArtwork)
+    
 def addArtist(catalog,artist):
     id=artist['ConstituentID']
     mp.put(catalog['artists'],str(id),artist)
@@ -83,7 +96,8 @@ def addArtwork(catalog,artwork):
     lt.addLast(catalog['artworks'],artwork)
 
 
-def addNation(catalog,artwork,mpArtists):
+def addNation(catalog,artwork):
+    mpArtists=catalog['artists']
     artistList=(artwork['ConstituentID'].replace('[','').replace(']','')).split(',')
     if artistList!=None or artistList!=[]:
         for artist in artistList:
@@ -215,17 +229,13 @@ def cronoArtist(catalog, inicio, fin):
     else: 
         lstArtist=[]
         for position in range(1,4):
-            selectArtist(position,completeList,lstArtist,catalog)
+            selectArtist(position,completeList,lstArtist)
         for position in range(lt.size(completeList)-2,lt.size(completeList)+1):
-            selectArtist(position,completeList,lstArtist,catalog)
+            selectArtist(position,completeList,lstArtist)
         headers = ['ConstituentID','DisplayName','BeginDate','Nationality','Gender','ArtistBio','Wiki QID','ULAN']
         tabla = tabulate(lstArtist,headers=headers,tablefmt='grid')
 
     return (tabla)
-
-
-
-
 
 #↑↑↑Aquí termina el Req1 ↑↑↑
 
@@ -347,7 +357,6 @@ def ordenNacionalidad(catalog):
     listCant=[]
 
     for nation in lt.iterator(nacionalidades):
-        nation = (mp.get(catalog['nationalities'],nation)['key'])
         size = lt.size(mp.get(catalog['nationalities'],nation)['value'])
         lt.addLast(listNacionalidades,{'nation':nation,'size':size})
     sortNation(listNacionalidades)
@@ -372,7 +381,12 @@ def ordenNacionalidad(catalog):
         listCant.append([nation['nation'],size])
 
     tablaCant = tabulate(listCant,headers=['Nationality','Artworks'],tablefmt='grid',numalign='right')
+
+    
     return (tabla,tablaCant)
+
+def cantNationality(catalog,nation):
+    return lt.size(mp.get(catalog['nationalities'],nation)['value'])
 
 # #↑↑↑Aquí termina el req4.↑↑↑
 
@@ -528,7 +542,7 @@ def chkUnknown(origen,clave):
     if origen[clave]==None or origen[clave]=='': return 'Unknown'
     else: return origen[clave]
 
-def selectArtist(position,ArtistList,lstArtistEnd,catalog):
+def selectArtist(position,ArtistList,lstArtistEnd):
     artist = lt.getElement(ArtistList,position)
     ConstID = artist['ConstituentID']
     name=distribuir(artist['DisplayName'],15)
