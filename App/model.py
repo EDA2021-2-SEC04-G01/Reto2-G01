@@ -54,11 +54,11 @@ debido a que se usaron array list, lo que hace que funcione diferente el ordenam
 def newCatalog():
     catalog = {
         'artworks':lt.newList('ARRAY_LIST'),
-        'artists':mp.newMap(20000,maptype='CHAINING',loadfactor=0.5),
-        'nationalities':mp.newMap(200,maptype='PROBING',loadfactor=0.8,comparefunction=compareNation),
-        'mediums': mp.newMap(50000,maptype='PROBING',loadfactor=0.8,comparefunction=compareMediums),
-        'dateArtists': mp.newMap(5000,maptype='CHAINING',loadfactor=0.5),
-        'artworksArtists':mp.newMap(20000,maptype='CHAINING',loadfactor=0.5)
+        'artists':mp.newMap(2000,maptype='CHAINING',loadfactor=0.8),
+        'nationalities':mp.newMap(50,maptype='CHAINING',loadfactor=0.7,comparefunction=compareNation),
+        'mediums': mp.newMap(25,maptype='PROBING',loadfactor=0.7,comparefunction=compareMediums),
+        'dateArtists': mp.newMap(2025,maptype='CHAINING',loadfactor=0.5),
+        'artworksArtists':mp.newMap(20,maptype='CHAINING',loadfactor=0.5)
     }
     return catalog
 # Funciones para agregar informacion al  catalogo
