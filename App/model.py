@@ -58,7 +58,8 @@ def newCatalog():
         'nationalities':mp.newMap(50,maptype='CHAINING',loadfactor=0.7,comparefunction=compareNation),
         'mediums': mp.newMap(25,maptype='PROBING',loadfactor=0.7,comparefunction=compareMediums),
         'dateArtists': mp.newMap(2025,maptype='CHAINING',loadfactor=0.5),
-        'artworksArtists':mp.newMap(20,maptype='CHAINING',loadfactor=0.5)
+        'artworksArtists':mp.newMap(20,maptype='CHAINING',loadfactor=0.5),
+        'departments' : mp.newMap(20,maptype='PROBING',loadfactor=0.6)
     }
     return catalog
 # Funciones para agregar informacion al  catalogo
@@ -125,6 +126,15 @@ def addMedium(catalog,artwork):
     mp.put(catalog['mediums'],artwork['Medium'],artworks)
 
 
+def addToDpto(catalog,artwork):
+    dpto = artwork['Department']
+    mapDpto = catalog['departments']
+    if mp.contains(mapDpto,dpto):
+        artworks = me.getValue(mp.get(mapDpto,dpto))
+    else:
+        artworks = lt.newList('SINGLE_LINKED')
+    lt.addLast(artworks,artwork)
+    mp.put(mapDpto,dpto,artworks)
 
 # Funciones para creacion de datos
 
@@ -165,7 +175,11 @@ def compareDates(date1,date2):
     return (date1<date2)
 
 def compareYears(artwork1,artwork2):
-    return artwork1['Date']<artwork2['Date']
+    if artwork1['Date']=='None' or artwork1['Date']=='':
+        artwork1['Date']=5000
+    if artwork2['Date']=='None' or artwork2['Date']=='':
+        artwork2['Date']=5000
+    return int(artwork1['Date'])<int(artwork2['Date'])
 
 def comparePrices(artwork1,artwork2):
     return artwork1['Price']>artwork2['Price']
@@ -179,8 +193,8 @@ def sortDates(keySet):
     sa.sort(keySet,compareDates)
 
 
-def sortArtYears(catalog):
-    msort.sort(catalog['artworks'],compareYears)
+def sortArtYears(artworks):
+    sa.sort(artworks,compareYears)
 
 def sortArtworksDates(catalog,cant,method):
 
@@ -402,68 +416,64 @@ def cambiar_uno(variable):
     else:
         return variable
 def precioTransporte(catalog,department):
-    artworks = catalog['artworks']
+    artworks = mp.get(catalog['departments'],department)['value']
     listbyPrice=[] #Estas dos listas son para pasarle al módulo tabulate
     listbyDate=[]
-    obrasTransport = lt.newList()
     precio = 0
     estimado_peso=0
     for artwork in lt.iterator(artworks):
-        dep = artwork['Department']
         rad=0
-        if department.lower() == dep.lower():
-            op1=0
-            op2=0
-            op3=0
-            lt.addLast(obrasTransport,artwork)
-            no_ceros=0
-            circ = check_none(artwork,'Circumference (cm)')
-            diam = check_none(artwork,'Diameter (cm)')
-            prof =  check_none(artwork,'Depth (cm)')
-            height =  check_none(artwork,'Height (cm)')
-            leng =  check_none(artwork,'Length (cm)')
-            width =  check_none(artwork,'Width (cm)')
-            peso=0
-            if artwork['Weight (kg)']!='' and artwork['Weight (kg)']!=None:
-                peso =  float(artwork['Weight (kg)'])
-                estimado_peso+=peso
+        op1=0
+        op2=0
+        op3=0
+        no_ceros=0
+        circ = check_none(artwork,'Circumference (cm)')
+        diam = check_none(artwork,'Diameter (cm)')
+        prof =  check_none(artwork,'Depth (cm)')
+        height =  check_none(artwork,'Height (cm)')
+        leng =  check_none(artwork,'Length (cm)')
+        width =  check_none(artwork,'Width (cm)')
+        peso=0
+        if artwork['Weight (kg)']!='' and artwork['Weight (kg)']!=None:
+            peso =  float(artwork['Weight (kg)'])
+            estimado_peso+=peso
 
-            lista = [prof,height,leng,width]
-            for dato in lista:
-                if dato!=0:
-                    no_ceros+=1
-            if no_ceros>=2 :
+        lista = [prof,height,leng,width]
+        for dato in lista:
+            if dato!=0:
+                no_ceros+=1
+        if no_ceros>=2 :
 
-                prof = cambiar_uno(prof)
-                height = cambiar_uno(height)
-                leng = cambiar_uno(leng)
-                width = cambiar_uno(width)
-                if circ!=0:
-                    rad = circ/2*m.pi
-                elif diam!=0:
-                    rad = diam/2
+            prof = cambiar_uno(prof)
+            height = cambiar_uno(height)
+            leng = cambiar_uno(leng)
+            width = cambiar_uno(width)
+            if circ!=0:
+                rad = circ/2*m.pi
+            elif diam!=0:
+                rad = diam/2
 
-                if rad != 0:
-                    op1 = m.pow(rad,2)*m.pi*height*72
+            if rad != 0:
+                op1 = m.pow(rad,2)*m.pi*height*72
 
-                else:
-                    op2 = prof*height*leng*width*72
-
-                op3 = peso*72
-                actual_precio = max([op1,op2,op3])
-                artwork['Price']=actual_precio
-                precio += actual_precio
             else:
-                artwork['Price']=48
-                precio+=48
+                op2 = prof*height*leng*width*72
 
-    sortArtPrice(obrasTransport)
-    for pos in range(1,6):
-        selectInfo(pos,obrasTransport,listbyPrice,catalog,True,False)
+            op3 = peso*72
+            actual_precio = max([op1,op2,op3])
+            artwork['Price']=actual_precio
+            precio += actual_precio
+        else:
+            artwork['Price']=48
+            precio+=48
 
-    sortArtYears(catalog)
+    sortArtPrice(artworks)
     for pos in range(1,6):
-        selectInfo(pos,obrasTransport,listbyDate,catalog,True,False)
+        selectInfo(pos,artworks,listbyPrice,catalog,True,False)
+
+    sortArtYears(artworks)
+    for pos in range(1,6):
+        selectInfo(pos,artworks,listbyDate,catalog,True,False)
 
 
     headers = ['ObjectID','Title','Artist(s)','Medium','Dimensions','Date','TransCost','Classification','URL']
@@ -472,7 +482,7 @@ def precioTransporte(catalog,department):
 
     tableDates = tabulate(listbyDate, headers=headers, tablefmt='grid',numalign='center')
 
-    return (lt.size(obrasTransport),round(estimado_peso,3),round(precio,3),tablePrice,tableDates)
+    return (lt.size(artworks),round(estimado_peso,3),round(precio,3),tablePrice,tableDates)
 #Termina el Req 5
 
 
@@ -539,7 +549,7 @@ def distribuir(elemento,cantidad):
     return str_distribuido
 
 def chkUnknown(origen,clave):
-    if origen[clave]==None or origen[clave]=='': return 'Unknown'
+    if origen[clave]==None or origen[clave]=='' or origen[clave]==5000 : return 'Unknown' #El 5000 se pone para compensar una de las funciones de comparación de años.
     else: return origen[clave]
 
 def selectArtist(position,ArtistList,lstArtistEnd):

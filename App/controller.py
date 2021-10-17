@@ -53,6 +53,7 @@ def loadArtworks(catalog):
         model.addMedium(catalog,artwork)
         model.addNation(catalog,artwork)
         model.addArtworksArtist(catalog,artwork)
+        model.addToDpto(catalog,artwork)
 
 
 
@@ -69,6 +70,10 @@ def masAntiguos(catalog,medium,cant):
 
 def cantNationality(catalog,nation):
     return model.cantNationality(catalog,nation)
+
+def precioTransporte(catalog,department):
+    return model.precioTransporte(catalog,department)
+
 
 """
 El controlador se encarga de mediar entre la vista y el modelo.

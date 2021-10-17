@@ -75,6 +75,25 @@ while True:
         print(model.ordenNacionalidad(catalog)[1])
 
 
+    elif int(inputs[0]) == 6:
+        start_time = time.process_time()
+        dpto=input("Escriba el departamento del museo: ")
+        print("\n=================Req No. 5 Inputs ====================\n ")
+        print("Estimate the cost to transport all artifacts in {} MoMA's Departament . . .\n".format(dpto))
+        rta=controller.precioTransporte(catalog,dpto)
+        print("================ Req No. 5 Answer ================\n")
+        print("The MoMA is going to transport {0} artifacts from the {1} department. ".format(rta[0],dpto))
+        print("REMEMBER!, NOT all MoMA's data is complete! ! !... These are estimates.  ")
+        print("Estimated cargo weight (kg): "+str(rta[1]))
+        print("Estimated cargo cost (USD): "+str(rta[2]))
+        print("\nThe TOP 5 most expensive items to transport are:")
+        print(controller.precioTransporte(catalog,dpto)[3])
+        print("\nThe TOP 5 oldest items to tranport are: ")
+        print(controller.precioTransporte(catalog,dpto)[4])
+        stop_time = time.process_time()
+        elapsed_time_mseg = (stop_time - start_time)*1000
+        print(elapsed_time_mseg)
+
     elif int(inputs[0]) == 7:
         print(mp.valueSet(catalog['artworksArtists']))
 
