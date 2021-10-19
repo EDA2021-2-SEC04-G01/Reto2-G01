@@ -94,3 +94,6 @@ def cronoArtworks(catalog,inicio,fin):
 
 def ordenNacionalidad(catalog):
     return (model.ordenNacionalidad(catalog))
+
+def cronoArtist(catalog,inicio,fin):
+    return model.cronoArtist(catalog,inicio,fin)

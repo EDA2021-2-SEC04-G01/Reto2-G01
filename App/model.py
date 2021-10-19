@@ -253,6 +253,7 @@ def cronoArtist(catalog, inicio, fin):
 
     else: 
         lstArtist=[]
+        artistCant = lt.size(completeList)
         for position in range(1,4):
             selectArtist(position,completeList,lstArtist)
         for position in range(lt.size(completeList)-2,lt.size(completeList)+1):
@@ -260,7 +261,7 @@ def cronoArtist(catalog, inicio, fin):
         headers = ['ConstituentID','DisplayName','BeginDate','Nationality','Gender','ArtistBio','Wiki QID','ULAN']
         tabla = tabulate(lstArtist,headers=headers,tablefmt='grid')
 
-    return (tabla)
+    return (tabla,artistCant)
 
 #↑↑↑Aquí termina el Req1 ↑↑↑
 
