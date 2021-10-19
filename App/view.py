@@ -41,7 +41,11 @@ operación solicitada
 def printMenu():
     print("Bienvenido")
     print("1- Cargar información en el catálogo")
-    print("2- las n obras más antiguas para un medio específico.")
+    print("2- Listar artistas cronológicamente en un rango de años")
+    print("3- Listar adquisiciones cronológicamente\n")
+    print("5- Clasificar obras por nacionalidad de sus creadores")
+    print("6- Calcular costo de transporte de todas las obras a un departamento\n")
+    print("8- las n obras más antiguas para un medio específico.")
     print("9- Cantidad de obras para una nacionalidad específica.")
 def initCatalog():
     
@@ -64,17 +68,73 @@ while True:
         elapsed_time_mseg = (stop_time - start_time)*1000
         print(elapsed_time_mseg)    
 
+#Requerimiento 1
     elif int(inputs[0]) == 2:
-        medium = input("Escriba un medio: ")
-        cant = int(input("Escriba una cantidad: "))
-        print(controller.masAntiguos(catalog,medium,cant))
+        
+        start_time = time.process_time()
+        inicio=int(input("Escriba el año de inicio: "))
+        fin=int(input("Escriba el año final: "))
+        print("================= Req No. 1 Inputs ==================")
+        print("\nArtist born between {} and {}.\n".format(inicio,fin))
+        resultados= controller.cronoArtist(catalog,inicio,fin)
+        if  "No hay" in resultados :
+            print(resultados+"\n")
+            break
+        tabla=resultados[0]
+        cantArtists = resultados[1]
+        print("================= Req No. 1 Answer ==================\n")
+        print("There are {0} artist born between {1} and {2}\n\n".format(cantArtists,inicio,fin))
+        print("The first and last 3 artists in range are...\n")
+        print(tabla)
+        stop_time = time.process_time()
+        elapsed_time_mseg = (stop_time - start_time)*1000
+        print(elapsed_time_mseg)
+
+##Requerimiento 2
+    elif int(inputs[0]) == 3:
+        start_time = time.process_time()
+        inicio=(input("Escriba la fecha de inicio: "))
+        fin=(input("Escriba la fecha final: "))
+        resultado = controller.cronoArtworks(catalog,inicio,fin)
+        tabla = resultado[0]
+        cantObras = resultado[1]
+        cantCompradas = resultado[2]
+        cantArtists = resultado[3]
+        print("=================== Req No. 2 Inputs =====================\n")
+        print("Artworks acquired between {0} and {1}".format(inicio,fin))
+        print("=================== Req No. 2 Answer =====================\n\n")
+        print("The MoMA acquired {0} unique pieces between {1} and {2}\n".format(str(cantObras),inicio,fin))
+        print("With {0} different artists and purchased {1} of them.\n\nThe first and last 3 artworks in the range are... ".format(cantArtists,cantCompradas))
+        print(tabla)
+
+        stop_time = time.process_time()
+        elapsed_time_mseg = (stop_time - start_time)*1000
+        print("El tiempo usado completo fue"+str(elapsed_time_mseg))
+
+#Requerimiento 3
+
+
+#Requerimiento 4
+    elif int(inputs[0]) == 5:
+        start_time = time.process_time()
+        print("=================Req No. 4 Inputs ====================\n ")
+        print("Ranking countries by their number of Artworks in the MoMA...\n")
+        resultados = controller.ordenNacionalidad(catalog)
+        print("\n--------------- Req No. 4 Answer -----------------\n")
+        print("The TOP 10 Countries in the MoMA are: ")
+        topNation=(resultados[0])
+        tablaOrden = resultados[1]
+        nameMajor = resultados[2]
+        cantMajor = resultados[3]
+        print(topNation)
+        print("The TOP nacionality in the museum is: {0} with {1} unique pieces.\nThe first and last 3 objects in the {0} artwork list are: ".format(nameMajor,str(cantMajor)))
+        print(tablaOrden)
+        stop_time = time.process_time()
+        elapsed_time_mseg = (stop_time - start_time)*1000
+        print(elapsed_time_mseg)
         
 
-    elif int(inputs[0]) == 5:
-        print(model.ordenNacionalidad(catalog)[0])
-        print(model.ordenNacionalidad(catalog)[1])
-
-
+#Requerimiento 5
     elif int(inputs[0]) == 6:
         start_time = time.process_time()
         dpto=input("Escriba el departamento del museo: ")
@@ -94,26 +154,25 @@ while True:
         elapsed_time_mseg = (stop_time - start_time)*1000
         print(elapsed_time_mseg)
 
+#Requerimiento 6 (BONO)
     elif int(inputs[0]) == 7:
         print(mp.valueSet(catalog['artworksArtists']))
 
+#Cosas de los laboratorios
+    elif int(inputs[0]) == 8:
+        medium = input("Escriba un medio: ")
+        cant = int(input("Escriba una cantidad: "))
+        print(controller.masAntiguos(catalog,medium,cant))
+
+    
     elif int(inputs[0]) == 9:
         nation = input("Escriba una nacionalidad: ")
         cantidad = controller.cantNationality(catalog,nation)
         print("La cantidad de obras para la nacionalidad {} es {}.".format(nation,cantidad))
 
     elif int(inputs[0]) == 0:
-        print(mp.keySet(catalog['dateArtworks']))
-        # print(model.cronoArtist(catalog,1920,1985))
-        # print('\n')
-        # for i in lt.iterator(mp.keySet(catalog['dateArtists'])):
-        #     print(i)
-        # # print(mp.keySet(catalog['nationalities']))
-        # for key in lt.iterator(mp.keySet(catalog['nationalities'])):
-        #     print(key,lt.size(mp.get(catalog['nationalities'],key)['value']))
-    elif int(inputs[0]) == 8:
-        print(model.cronoArtwork(catalog,'1944-06-06','1989-11-09')[0])
-
+        #Aquí es para probar nada más
+        pass
 
     else:
         sys.exit(0)

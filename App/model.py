@@ -270,7 +270,6 @@ def cronoArtwork(catalog, inicio, fin):
     fin = time.strptime(fin,"%Y-%m-%d")
     dates = mp.keySet(catalog['dateArtworks'])
     purchasedCant=0 
-    artistList=lt.newList()
     FilteredList=lt.newList('ARRAY_LIST')
     mpArtists = mp.newMap(numelements=1,maptype='CHAINING',loadfactor=0.7)
 
@@ -296,7 +295,7 @@ def cronoArtwork(catalog, inicio, fin):
     if lt.isEmpty(FilteredList):
         return "No hay obras de arte en el rango indicado"
     else:
-        cantArtists = lt.size(artistList)
+        cantArtists = mp.size(mpArtists)
         listReturn = []
         for position in range(1,4):
             selectInfo(position,FilteredList,listReturn,catalog,False,False)
@@ -381,7 +380,7 @@ def ordenNacionalidad(catalog):
     sortNation(listNacionalidades)
 
     nameMayor = lt.firstElement(listNacionalidades)['nation']
-    mayor = mp.get(catalog['nationalities'],lt.firstElement(listNacionalidades)['nation'])['value']
+    mayor = mp.get(catalog['nationalities'],nameMayor)['value']
 
     for position in range(1,4):
         selectInfo(position,mayor,listArtworksEnd,catalog,False,False)
@@ -402,7 +401,7 @@ def ordenNacionalidad(catalog):
     tablaCant = tabulate(listCant,headers=['Nationality','Artworks'],tablefmt='grid',numalign='right')
 
     
-    return (tabla,tablaCant)
+    return (tablaCant,tabla,nameMayor,lt.size(mayor))
 
 def cantNationality(catalog,nation):
     return lt.size(mp.get(catalog['nationalities'],nation)['value'])

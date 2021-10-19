@@ -20,6 +20,7 @@
  * along withthis program.  If not, see <http://www.gnu.org/licenses/>.
  """
 
+from App.model import ordenNacionalidad
 import config as cf
 import model
 import csv
@@ -87,3 +88,9 @@ El controlador se encarga de mediar entre la vista y el modelo.
 # Funciones de ordenamiento
 
 # Funciones de consulta sobre el catálogo
+def cronoArtworks(catalog,inicio,fin):
+    #Ordenamos aquí y no al inicio con lo demás para no alterar el resultado del requerimiento 4.
+    return(model.cronoArtwork(catalog,inicio,fin))
+
+def ordenNacionalidad(catalog):
+    return (model.ordenNacionalidad(catalog))
