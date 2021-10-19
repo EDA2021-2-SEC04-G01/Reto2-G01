@@ -103,14 +103,17 @@ while True:
         print("La cantidad de obras para la nacionalidad {} es {}.".format(nation,cantidad))
 
     elif int(inputs[0]) == 0:
-        print(model.cronoArtist(catalog,1920,1985))
+        print(mp.keySet(catalog['dateArtworks']))
+        # print(model.cronoArtist(catalog,1920,1985))
         # print('\n')
         # for i in lt.iterator(mp.keySet(catalog['dateArtists'])):
         #     print(i)
         # # print(mp.keySet(catalog['nationalities']))
         # for key in lt.iterator(mp.keySet(catalog['nationalities'])):
         #     print(key,lt.size(mp.get(catalog['nationalities'],key)['value']))
-        
+    elif int(inputs[0]) == 8:
+        print(model.cronoArtwork(catalog,'1944-06-06','1989-11-09')[0])
+
 
     else:
         sys.exit(0)

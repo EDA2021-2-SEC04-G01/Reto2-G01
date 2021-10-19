@@ -40,6 +40,7 @@ assert cf
 from tabulate import tabulate
 import textwrap
 import time
+import datetime
 """
 Se define la estructura de un catálogo de videos. El catálogo tendrá dos listas, una para los videos, otra para las categorias de
 los mismos.
@@ -58,6 +59,7 @@ def newCatalog():
         'nationalities':mp.newMap(50,maptype='CHAINING',loadfactor=0.7,comparefunction=compareNation),
         'mediums': mp.newMap(25,maptype='PROBING',loadfactor=0.7,comparefunction=compareMediums),
         'dateArtists': mp.newMap(2025,maptype='CHAINING',loadfactor=0.5),
+        'dateArtworks': mp.newMap(1000, maptype='CHAINING',loadfactor=0.5),
         'artworksArtists':mp.newMap(20,maptype='CHAINING',loadfactor=0.5),
         'departments' : mp.newMap(20,maptype='PROBING',loadfactor=0.6)
     }
@@ -125,6 +127,19 @@ def addMedium(catalog,artwork):
     lt.addLast(artworks,artwork)
     mp.put(catalog['mediums'],artwork['Medium'],artworks)
 
+def addArtworkbyDate(catalog,artwork):
+    date = artwork['DateAcquired']
+    if date =='' or date==None:
+        date = '2100-12-24'
+    mapDates = catalog['dateArtworks']
+    if mp.contains(mapDates,date):
+        artworks = me.getValue(mp.get(mapDates,date))
+    else:
+        artworks = lt.newList('SINGLE_LINKED')
+
+    lt.addLast(artworks,artwork)
+    mp.put(mapDates,date,artworks)
+
 
 def addToDpto(catalog,artwork):
     dpto = artwork['Department']
@@ -185,7 +200,9 @@ def comparePrices(artwork1,artwork2):
     return artwork1['Price']>artwork2['Price']
 
 def compareArtDates(art1,art2):
-    return (art1['DateAcquired']<art2['DateAcquired'])
+    date1 = time.strptime(art1,'%Y-%m-%d')
+    date2 = time.strptime(art2,'%Y-%m-%d')
+    return (date1<date2)
 
 
 # Funciones de ordenamiento
@@ -196,14 +213,8 @@ def sortDates(keySet):
 def sortArtYears(artworks):
     sa.sort(artworks,compareYears)
 
-def sortArtworksDates(catalog,cant,method):
-
-    list_sort=lt.subList(catalog['artworks'],1,cant)
-    start_time = time.process_time()
-    eval(method).sort(list_sort,compareArtDates)
-    stop_time = time.process_time()
-    elapsed_time_mseg = (stop_time - start_time)*1000
-    return (list_sort,elapsed_time_mseg)
+def sortArtworksDates(datesList):
+    sa.sort(datesList,compareArtDates)
 
 
 def sortNation(nationality):
@@ -254,53 +265,47 @@ def cronoArtist(catalog, inicio, fin):
 #↑↑↑Aquí termina el Req1 ↑↑↑
 
 #Req2.
-def cronoArtwork(catalog,sublista, inicio, fin):
-    purchasedCant=0
-    inicio=int(inicio.replace('-',''))
-    fin=int(fin.replace('-',''))
-    artists = catalog['artists']
+def cronoArtwork(catalog, inicio, fin):
+    inicio = time.strptime(inicio,"%Y-%m-%d")
+    fin = time.strptime(fin,"%Y-%m-%d")
+    dates = mp.keySet(catalog['dateArtworks'])
+    purchasedCant=0 
     artistList=lt.newList()
-    FiltredList=lt.newList()
-    for artwork in lt.iterator(sublista):
+    FilteredList=lt.newList('ARRAY_LIST')
+    mpArtists = mp.newMap(numelements=1,maptype='CHAINING',loadfactor=0.7)
 
+    sortArtworksDates(dates)
 
-        if artwork["DateAcquired"] != '':
-            if int(artwork["DateAcquired"].replace('-','')) in range(inicio,fin+1):
-
-#               Esto de aquí es para sacar los artistas únicos y luego contarlos, al final.
-                idArtist = artwork['ConstituentID'].replace('[','').replace(']','').split(',')
-
-                for id in idArtist:
-                    id=id.strip()
-                    pos = lt.isPresent(artists,id)
-
-                    if pos!=0:
-                        artist =(lt.getElement(artists,pos))['DisplayName']
-                        #En esta linea nos aseguramos de que no hayan artistas repetidos
-                        if lt.isPresent(artistList,artist)==0: lt.addLast(artistList,artist)
-
-
-                lt.addLast(FiltredList,artwork)
-
-                if ('purchase' in artwork['CreditLine'].lower()):
+    for date in lt.iterator(dates):
+        dateFormat = time.strptime(date,'%Y-%m-%d')
+        if dateFormat>=inicio and dateFormat<=fin:
+            artworks = mp.get(catalog['dateArtworks'],date)['value']
+            for artwork in lt.iterator(artworks):
+                if 'purchase' in artwork['CreditLine'].lower():
                     purchasedCant+=1
-#           Aquí hacemos que el ciclo se rompa porque ya está ordenado, así que es mejor detener el ciclo si se sabe que no hay más después
-            elif int((artwork['DateAcquired'].replace('-','')).strip()) > fin:
-                break
+                lt.addLast(FilteredList,artwork)
+                idArtist = artwork['ConstituentID'].replace('[','').replace(']','').split(',')
+                for id in idArtist:
+                    id = id.strip()
+                    if mp.contains(catalog['artists'],id):
+                        mp.put(mpArtists,id,'Nada')
 
-    if lt.isEmpty(FiltredList):
+        elif dateFormat>fin:
+            break
+
+    if lt.isEmpty(FilteredList):
         return "No hay obras de arte en el rango indicado"
     else:
         cantArtists = lt.size(artistList)
         listReturn = []
         for position in range(1,4):
-            selectInfo(position,FiltredList,listReturn,catalog,False,False)
+            selectInfo(position,FilteredList,listReturn,catalog,False,False)
 
-        for position in range(lt.size(FiltredList)-2,lt.size(FiltredList)+1):
-            selectInfo(position,FiltredList,listReturn,catalog,False,False)
+        for position in range(lt.size(FilteredList)-2,lt.size(FilteredList)+1):
+            selectInfo(position,FilteredList,listReturn,catalog,False,False)
         headers = ['ObjectID','Title','Artist(s)','Medium','Dimensions','Date','Department','Classification','URL']
         tabla = tabulate(listReturn,headers=headers,tablefmt='grid',numalign='center')
-        return (tabla,lt.size(FiltredList),purchasedCant,cantArtists)
+        return (tabla,lt.size(FilteredList),purchasedCant,cantArtists)
 #↑↑↑Aquí termina el Req2.↑↑↑
 
 #REQ 3 ELABORADO POR DANIEL MOLANO - 202012695

@@ -54,6 +54,7 @@ def loadArtworks(catalog):
         model.addNation(catalog,artwork)
         model.addArtworksArtist(catalog,artwork)
         model.addToDpto(catalog,artwork)
+        model.addArtworkbyDate(catalog,artwork)
 
 
 
