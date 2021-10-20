@@ -61,10 +61,49 @@ def newCatalog():
         'dateArtists': mp.newMap(2025,maptype='CHAINING',loadfactor=0.5),
         'dateArtworks': mp.newMap(1000, maptype='CHAINING',loadfactor=0.5),
         'artworksArtists':mp.newMap(20,maptype='CHAINING',loadfactor=0.5),
-        'departments' : mp.newMap(20,maptype='PROBING',loadfactor=0.6)
+        'departments' : mp.newMap(20,maptype='PROBING',loadfactor=0.6),
+        'artistsNames' :mp.newMap(20,maptype='PROBING',loadfactor=0.6)
     }
     return catalog
 # Funciones para agregar informacion al  catalogo
+
+
+def addartistName(catalog,artwork):
+    ids = artwork['ConstituentID']
+    ids = ids.replace('[','').replace(']','').split(',') 
+    for id in ids:
+        id = id.strip()
+        if mp.contains(catalog['artists'],id):
+            name = (mp.get(catalog['artists'],id)['value'])['DisplayName']
+            if mp.contains(catalog['artistsNames'],name):
+                lista = mp.get(catalog['artistsNames'],name)['value']
+            else:
+                lista = lt.newList()
+
+            lt.addLast(lista,artwork)
+            mp.put(catalog['artistsNames'],name,lista)
+
+def buscarArtista(name,catalog):
+    artistas = catalog['artistsNames']
+    tecnicas = mp.newMap(20,maptype='PROBING',loadfactor=0.6)
+
+    if mp.contains(artistas,name):
+        obras = mp.get(artistas,name)['value']
+        total_obras = lt.size(obras)
+        for obra in lt.iterator(obras):
+            if mp.contains(tecnicas,obra['Medium']):
+                cant=mp.get(tecnicas,obra['Medium'])['value']+1
+            else:
+                cant = 1
+            mp.put(tecnicas,obra['Medium'],cant)
+        
+
+        cant_tecnicas = mp.size(tecnicas)
+        return(total_obras,cant_tecnicas)
+
+    else:
+        return 'No existe un artista con el nombre ingresado.'         
+
 
 def addArtworksArtist(catalog,artwork):
     artists = catalog['artists']
@@ -155,6 +194,12 @@ def addToDpto(catalog,artwork):
 
 
 # Funciones utilizadas para comparar elementos dentro de una lista
+
+def compareQuantityMedium(medium1,medium2):
+    return medium1['value'] > medium2['value']
+
+def sortMediumArtist(listMediums):
+    sa.sort(listMediums,compareQuantityMedium)
 
 def compareMediums(artworkMedium,entry):
     mediumentry = me.getKey(entry)
@@ -248,6 +293,8 @@ def cronoArtist(catalog, inicio, fin):
         if int(date) in range(inicio,fin+1): 
             for artist in lt.iterator(mp.get(catalog['dateArtists'],date)['value']):
                 lt.addLast(completeList,artist)
+        elif int(date)>fin+1:
+            break
     if lt.isEmpty(completeList):
         return "No hay artistas en el rango indicado"
 
@@ -281,16 +328,17 @@ def cronoArtwork(catalog, inicio, fin):
         if dateFormat>=inicio and dateFormat<=fin:
             artworks = mp.get(catalog['dateArtworks'],date)['value']
             for artwork in lt.iterator(artworks):
+                lt.addLast(FilteredList,artwork)
+
                 if 'purchase' in artwork['CreditLine'].lower():
                     purchasedCant+=1
-                lt.addLast(FilteredList,artwork)
+                
                 idArtist = artwork['ConstituentID'].replace('[','').replace(']','').split(',')
                 for id in idArtist:
                     id = id.strip()
-                    if mp.contains(catalog['artists'],id):
-                        mp.put(mpArtists,id,'Nada')
+                    mp.put(mpArtists,id,'Nada')
 
-        elif dateFormat>fin:
+        elif dateFormat>fin: #Como está ordenado cuando se sale del rango deja de iterar.
             break
 
     if lt.isEmpty(FilteredList):
@@ -309,6 +357,8 @@ def cronoArtwork(catalog, inicio, fin):
 #↑↑↑Aquí termina el Req2.↑↑↑
 
 #REQ 3 ELABORADO POR DANIEL MOLANO - 202012695
+
+
 def artistPerTecnique(catalog,nombre):
 
     artistID=None
@@ -404,9 +454,6 @@ def ordenNacionalidad(catalog):
     
     return (tablaCant,tabla,nameMayor,lt.size(mayor))
 
-def cantNationality(catalog,nation):
-    return lt.size(mp.get(catalog['nationalities'],nation)['value'])
-
 # #↑↑↑Aquí termina el req4.↑↑↑
 
 # Req 5
@@ -453,16 +500,13 @@ def precioTransporte(catalog,department):
             height = cambiar_uno(height)
             leng = cambiar_uno(leng)
             width = cambiar_uno(width)
-            if circ!=0:
-                rad = circ/2*m.pi
-            elif diam!=0:
-                rad = diam/2
+            
+            if circ!=0: rad = circ/2*m.pi
+            elif diam!=0: rad = diam/2
 
-            if rad != 0:
-                op1 = m.pow(rad,2)*m.pi*height*72
+            if rad != 0: op1 = m.pow(rad,2)*m.pi*height*72
 
-            else:
-                op2 = prof*height*leng*width*72
+            else: op2 = prof*height*leng*width*72
 
             op3 = peso*72
             actual_precio = max([op1,op2,op3])
@@ -547,7 +591,6 @@ def newExpo(artworks,begin,end,area,catalog):
 
 
 
-#TODO mover esto para otro lado porque en el model no se ve bien.
 #↓↓↓Esto de acá es para el formatting de las tablas ↓↓↓
 def distribuir(elemento,cantidad):
     str_distribuido = '\n'.join((textwrap.wrap(elemento,cantidad)))
@@ -572,7 +615,7 @@ def selectArtist(position,ArtistList,lstArtistEnd):
     artistInfo=[ConstID,name,bgndate,nationality,gender,bio,qid,ulan]
     lstArtistEnd.append(artistInfo)
 
-def selectInfo(position,ListArtworks,FiltredList,catalog,prices:bool,areas:bool):
+def selectInfo(position,ListArtworks,FilteredList,catalog,prices:bool,areas:bool):
 #       ↓↓↓ Todo este montón de líneas se encargan de sacar la info. necesaria del diccionario grande y con textwrap lo separa en líneas de un igual tamaño.
         artwork = lt.getElement(ListArtworks,position)
 
@@ -617,5 +660,5 @@ def selectInfo(position,ListArtworks,FiltredList,catalog,prices:bool,areas:bool)
             artwork_entrega = [objectID,title,artists,medium,dimensions,date,department,
             area,classification,url]
 #       Se pone un nuevo registro con la info de cada obra en la lista grande declarada al inicio.
-        FiltredList.append(artwork_entrega)
+        FilteredList.append(artwork_entrega)
 #↑↑↑ Termina el formatting de las tablas ↑↑↑

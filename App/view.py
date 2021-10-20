@@ -171,6 +171,7 @@ while True:
         print("La cantidad de obras para la nacionalidad {} es {}.".format(nation,cantidad))
 
     elif int(inputs[0]) == 0:
+        print(model.buscarArtista('Louise Bourgeois',catalog))
         #Aquí es para probar nada más
         pass
 

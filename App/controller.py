@@ -33,7 +33,6 @@ def initCatalog():
 def loadData(catalog):
     loadArtists(catalog)
     loadArtworks(catalog)
-    # sortDates(catalog)
 
 
 def loadArtists(catalog):
@@ -56,6 +55,7 @@ def loadArtworks(catalog):
         model.addArtworksArtist(catalog,artwork)
         model.addToDpto(catalog,artwork)
         model.addArtworkbyDate(catalog,artwork)
+        model.addartistName(catalog,artwork)
 
 
 
