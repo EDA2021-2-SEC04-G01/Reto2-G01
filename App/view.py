@@ -165,9 +165,9 @@ while True:
         print("Estimated cargo weight (kg): "+str(rta[1]))
         print("Estimated cargo cost (USD): "+str(rta[2]))
         print("\nThe TOP 5 most expensive items to transport are:")
-        print(controller.precioTransporte(catalog,dpto)[3])
+        print(rta[3])
         print("\nThe TOP 5 oldest items to tranport are: ")
-        print(controller.precioTransporte(catalog,dpto)[4])
+        print(rta[4])
         stop_time = time.process_time()
         elapsed_time_mseg = (stop_time - start_time)*1000
         print(elapsed_time_mseg)
