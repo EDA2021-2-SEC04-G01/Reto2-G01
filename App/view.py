@@ -128,6 +128,9 @@ while True:
         print("His/Her most used Medium/Technique is: "+ str(resultado[2])+"\n")
         print("A sample from the collection are \n")
         print(resultado[4])
+        stop_time = time.process_time()
+        elapsed_time_mseg = (stop_time - start_time)*1000
+        print(elapsed_time_mseg)
 
 #Requerimiento 4
     elif int(inputs[0]) == 5:
@@ -189,8 +192,7 @@ while True:
         stop_time = time.process_time()
         elapsed_time_mseg = (stop_time - start_time)*1000
         print(elapsed_time_mseg)
-        #Aquí es para probar nada más
-        pass
+
 
 #Cosas de los laboratorios
     elif int(inputs[0]) == 8:
