@@ -303,9 +303,9 @@ def cronoArtist(catalog, inicio, fin):
         lstArtist=[]
         artistCant = lt.size(completeList)
         for position in range(1,4):
-            selectArtist(position,completeList,lstArtist)
+            selectArtist(position,completeList,lstArtist,False)
         for position in range(lt.size(completeList)-2,lt.size(completeList)+1):
-            selectArtist(position,completeList,lstArtist)
+            selectArtist(position,completeList,lstArtist,False)
         headers = ['ConstituentID','DisplayName','BeginDate','Nationality','Gender','ArtistBio','Wiki QID','ULAN']
         tabla = tabulate(lstArtist,headers=headers,tablefmt='grid')
 
@@ -348,10 +348,10 @@ def cronoArtwork(catalog, inicio, fin):
         cantArtists = mp.size(mpArtists)
         listReturn = []
         for position in range(1,4):
-            selectInfo(position,FilteredList,listReturn,catalog,False,False)
+            selectInfo(position,FilteredList,listReturn,catalog,False,False,False)
 
         for position in range(lt.size(FilteredList)-2,lt.size(FilteredList)+1):
-            selectInfo(position,FilteredList,listReturn,catalog,False,False)
+            selectInfo(position,FilteredList,listReturn,catalog,False,False,False)
         headers = ['ObjectID','Title','Artist(s)','Medium','Dimensions','Date','Department','Classification','URL']
         tabla = tabulate(listReturn,headers=headers,tablefmt='grid',numalign='center')
         return (tabla,lt.size(FilteredList),purchasedCant,cantArtists)
@@ -396,10 +396,10 @@ def buscarArtista(name,catalog):
 
 
         for position in range(1,4):
-            selectInfo(position,obras_final,listArtworksEnd,catalog,False,False)
+            selectInfo(position,obras_final,listArtworksEnd,catalog,False,False,False)
 
         for position in range(lt.size(obras_final)-3,lt.size(obras_final)):
-            selectInfo(position,obras_final,listArtworksEnd,catalog,False,False)
+            selectInfo(position,obras_final,listArtworksEnd,catalog,False,False,False)
         headers = ['ObjectID','Title','Artist(s)','Medium','Dimensions','Date','Department','Classification','URL']
         tabla=(tabulate(listArtworksEnd, headers=headers, tablefmt='grid',numalign='center'))
         
@@ -432,10 +432,10 @@ def ordenNacionalidad(catalog):
     mayor = mp.get(catalog['nationalities'],nameMayor)['value']
 
     for position in range(1,4):
-        selectInfo(position,mayor,listArtworksEnd,catalog,False,False)
+        selectInfo(position,mayor,listArtworksEnd,catalog,False,False,False)
 
     for position in range(lt.size(mayor)-3,lt.size(mayor)):
-        selectInfo(position,mayor,listArtworksEnd,catalog,False,False)
+        selectInfo(position,mayor,listArtworksEnd,catalog,False,False,False)
 
 #       Se hacen los headers, para ponerlos en la tabla
     headers = ['ObjectID','Title','Artist(s)','Medium','Dimensions','Date','Department','Classification','URL']
@@ -516,11 +516,11 @@ def precioTransporte(catalog,department):
 
     sortArtPrice(artworks)
     for pos in range(1,6):
-        selectInfo(pos,artworks,listbyPrice,catalog,True,False)
+        selectInfo(pos,artworks,listbyPrice,catalog,True,False,False)
 
     sortArtYears(artworks)
     for pos in range(1,6):
-        selectInfo(pos,artworks,listbyDate,catalog,True,False)
+        selectInfo(pos,artworks,listbyDate,catalog,True,False,False)
 
 
     headers = ['ObjectID','Title','Artist(s)','Medium','Dimensions','Date','TransCost','Classification','URL']
@@ -539,6 +539,8 @@ def Proli(begin,end,cant_artists ,catalog):
     dataArtists = catalog['artists']
     artist_list = mp.keySet(catalog['artworksArtists'])
     artworksArtist = catalog['artworksArtists']
+    listArtworksEnd=[]
+    listArtistsEnd=[]
 
     completeArtists=lt.newList('ARRAY_LIST')
 
@@ -593,9 +595,19 @@ def Proli(begin,end,cant_artists ,catalog):
     for art in lt.iterator(filteredArtworks):
         print(art['DateAcquired']) 
 
-    headers = ['ObjectID','Title','Artist(s)','Medium','Dimensions','Date','Department','EstArea (m\u00b2)','Classification','URL']
-    for pos in range(1,cant_artists+1):
-        selectInfo
+    
+    for pos in range(1,6):
+        selectInfo(pos,filteredArtworks,listArtworksEnd,catalog,False,False,True)
+    headers = ['ObjectID','Title','Artist(s)','Medium','Date','Dimensions','DateAcquired','Department','URL']
+    table = tabulate(listArtworksEnd, headers=headers, tablefmt='grid',numalign='center')  
+
+    for pos in range(1,cant_artists):
+        selectArtist(pos,completeArtists,listArtistsEnd,True)
+    headersArtists = ['ConstituentID','DisplayName','BeginDate','Gender','ArtistBio','Wiki QID','ULAN','Artwork Number','Medium Number','Top medium']
+    table_artists = tabulate(listArtistsEnd,headers=headersArtists,tablefmt='grid')
+    print(table)  
+    print('\n')
+    print(table_artists)
     # for pos in range(1,6):
     #      selectInfo(pos,list_artworks,listArtworksEnd,catalog,False,True)
 
@@ -622,7 +634,8 @@ def chkUnknown(origen,clave):
     if origen[clave]==None or origen[clave]=='' or origen[clave]==5000 or origen[clave]=='2100-12-24': return 'Unknown' #El 5000 se pone para compensar una de las funciones de comparación de años.
     else: return origen[clave]
 
-def selectArtist(position,ArtistList,lstArtistEnd):
+def selectArtist(position,ArtistList,lstArtistEnd,isbonus:bool):
+
     artist = lt.getElement(ArtistList,position)
     ConstID = artist['ConstituentID']
     name=distribuir(artist['DisplayName'],15)
@@ -633,11 +646,15 @@ def selectArtist(position,ArtistList,lstArtistEnd):
     bio=chkUnknown(artist,'ArtistBio')
     qid=chkUnknown(artist,'Wiki QID')
     ulan = chkUnknown(artist,'ULAN')
-
+    if isbonus:
+        artnum=chkUnknown(artist,'cant_obras')
+        medNum=chkUnknown(artist,'cant_mediums')
+        topMed=chkUnknown(artist,'tecnicaMayor')
+        artistInfo=[ConstID,name,bgndate,gender,bio,qid,ulan,artnum,medNum,topMed]
     artistInfo=[ConstID,name,bgndate,nationality,gender,bio,qid,ulan]
     lstArtistEnd.append(artistInfo)
 
-def selectInfo(position,ListArtworks,FilteredList,catalog,prices:bool,areas:bool):
+def selectInfo(position,ListArtworks,FilteredList,catalog,prices:bool,areas:bool,dateAcq:bool):
 #       ↓↓↓ Todo este montón de líneas se encargan de sacar la info. necesaria del diccionario grande y con textwrap lo separa en líneas de un igual tamaño.
         artwork = lt.getElement(ListArtworks,position)
 
@@ -649,7 +666,7 @@ def selectInfo(position,ListArtworks,FilteredList,catalog,prices:bool,areas:bool
         department=distribuir(chkUnknown(artwork,'Department'),15)
         classification=distribuir(chkUnknown(artwork,'Classification'),15)
         url = distribuir(chkUnknown(artwork,'URL'),15)
-
+        
 #       Aquí se recorren internamente los artistas que tenga cada obra para luego buscarlos en el archivo artists y sacar sus nombres.
         artists = ""
         idArtist = artwork['ConstituentID'].replace('[','').replace(']','').split(',') #Hago lo de artwork['ConstituentID'].replace('[','').replace(']','') para quitarle los corchetes []
@@ -676,11 +693,15 @@ def selectInfo(position,ListArtworks,FilteredList,catalog,prices:bool,areas:bool
         if prices:
             price = chkUnknown(artwork,'Price')
             artwork_entrega = [objectID,title,artists,medium,dimensions,date,
-            price,classification,url]
+                             price,classification,url]
         if areas:
             area = chkUnknown(artwork,'Area')
             artwork_entrega = [objectID,title,artists,medium,dimensions,date,department,
-            area,classification,url]
+                                area,classification,url]
+        if dateAcq:
+            dateAcquired = distribuir(chkUnknown(artwork,'DateAcquired'),15)
+            artwork_entrega = [objectID,title,artists,medium,date,dimensions,dateAcquired,
+                                department,classification,url]
 #       Se pone un nuevo registro con la info de cada obra en la lista grande declarada al inicio.
         FilteredList.append(artwork_entrega)
 #↑↑↑ Termina el formatting de las tablas ↑↑↑
