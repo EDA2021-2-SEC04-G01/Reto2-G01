@@ -97,3 +97,6 @@ def ordenNacionalidad(catalog):
 
 def cronoArtist(catalog,inicio,fin):
     return model.cronoArtist(catalog,inicio,fin)
+
+def artistPerTecnique(nombre,catalog):
+    return model.buscarArtista(nombre,catalog)

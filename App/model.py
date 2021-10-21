@@ -83,6 +83,8 @@ def addartistName(catalog,artwork):
             lt.addLast(lista,artwork)
             mp.put(catalog['artistsNames'],name,lista)
 
+
+
 def addArtworksArtist(catalog,artwork):
     artists = catalog['artists']
     medium = artwork['Medium']

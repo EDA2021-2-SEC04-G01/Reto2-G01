@@ -43,6 +43,7 @@ def printMenu():
     print("1- Cargar información en el catálogo")
     print("2- Listar artistas cronológicamente en un rango de años")
     print("3- Listar adquisiciones cronológicamente\n")
+    print("4- clasificar las obras de un artista por técnica\n")
     print("5- Clasificar obras por nacionalidad de sus creadores")
     print("6- Calcular costo de transporte de todas las obras a un departamento\n")
     print("8- las n obras más antiguas para un medio específico.")
@@ -112,7 +113,20 @@ while True:
         print("El tiempo usado completo fue"+str(elapsed_time_mseg))
 
 #Requerimiento 3
-
+    elif int(inputs[0])==4:
+        start_time = time.process_time()
+        nombre=(input("Escriba el nombre del artista: "))
+        resultado= controller.artistPerTecnique(nombre,catalog)
+        print("=================Req No. 3 Inputs ==================== ")
+        print("Examine the work of the artist named: "+ str(nombre))
+        print("=================== Req No. 3 Answer =====================")
+        print(str(nombre)+" has "+str(resultado[0])+ " pieces \n")
+        print("There are "+str(resultado[1])+" different mediums/techniques in his/her work.\n")
+        print("Her/His top 5 Medium/Technique are: \n")
+        print(resultado[3])
+        print("His/Her most used Medium/Technique is: "+ str(resultado[2])+"\n")
+        print("A sample from the collection are \n")
+        print(resultado[4])
 
 #Requerimiento 4
     elif int(inputs[0]) == 5:
