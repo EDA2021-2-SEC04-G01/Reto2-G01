@@ -566,6 +566,7 @@ def Proli(begin,end,cant_artists ,catalog):
                     cantidad = 1
                 if cantidad > cant_mayor:
                     tecnica_mayor = tecnica 
+                    cant_mayor=cantidad
                 mp.put(tecnicas,tecnica,cantidad)
 
             cant_mediums = mp.size(tecnicas)
@@ -602,7 +603,7 @@ def Proli(begin,end,cant_artists ,catalog):
     headersArtists = ['ConstituentID','DisplayName','BeginDate','Gender','ArtistBio','Wiki QID','ULAN','Artwork Number','Medium Number','Top medium']
     table_artists = tabulate(listArtistsEnd,headers=headersArtists,tablefmt='grid')
     
-    return (lt.size(completeArtists),table, most_prolific_name,most_prolific_id,artcantBest,table_artists)
+    return (lt.size(completeArtists),table_artists, most_prolific_name,most_prolific_id,artcantBest,table)
 #↑↑↑Termina el Req 6↑↑↑
 
 
@@ -626,15 +627,15 @@ def selectArtist(position,ArtistList,lstArtistEnd,isbonus:bool):
     bgndate=chkUnknown(artist,'BeginDate')
     nationality=chkUnknown(artist,'Nationality')
     gender=chkUnknown(artist,'Gender')
-    bio=chkUnknown(artist,'ArtistBio')
-    qid=chkUnknown(artist,'Wiki QID')
+    bio=distribuir(chkUnknown(artist,'ArtistBio'),15)
+    qid=distribuir(chkUnknown(artist,'Wiki QID'),10)
     ulan = chkUnknown(artist,'ULAN')
     if isbonus:
         artnum=chkUnknown(artist,'cant_obras')
         medNum=chkUnknown(artist,'cant_mediums')
-        topMed=chkUnknown(artist,'tecnicaMayor')
+        topMed=((artist['tecnicaMayor']))
         artistInfo=[ConstID,name,bgndate,gender,bio,qid,ulan,artnum,medNum,topMed]
-    artistInfo=[ConstID,name,bgndate,nationality,gender,bio,qid,ulan]
+    else: artistInfo=[ConstID,name,bgndate,nationality,gender,bio,qid,ulan]
     lstArtistEnd.append(artistInfo)
 
 def selectInfo(position,ListArtworks,FilteredList,catalog,prices:bool,areas:bool,dateAcq:bool):
