@@ -83,6 +83,69 @@ def addartistName(catalog,artwork):
             lt.addLast(lista,artwork)
             mp.put(catalog['artistsNames'],name,lista)
 
+<<<<<<< HEAD
+=======
+def buscarArtista(name,catalog):
+    artistas = catalog['artistsNames']
+    tecnicas = mp.newMap(20,maptype='PROBING',loadfactor=0.6)
+
+    if mp.contains(artistas,name):
+        obras = mp.get(artistas,name)['value']
+        total_obras = lt.size(obras)
+        for obra in lt.iterator(obras):
+            if mp.contains(tecnicas,obra['Medium']):
+                cant=mp.get(tecnicas,obra['Medium'])['value']+1
+            else:
+                cant = 1
+            mp.put(tecnicas,obra['Medium'],cant)
+        
+
+        cant_tecnicas = mp.size(tecnicas)
+        return(total_obras,cant_tecnicas)
+
+    else:
+        return 'No existe un artista con el nombre ingresado.'         
+
+
+def addArtworksArtist(catalog,artwork):
+    artists = catalog['artists']
+    medium = artwork['Medium']
+
+    date = artwork['DateAcquired']
+    if date =='' or date==None:
+        artwork['DateAcquired'] = '2100-12-24'
+
+    idArtist = artwork['ConstituentID'].replace('[','').replace(']','').split(',')
+    for currentArtist in idArtist:
+        currentArtist=currentArtist.strip() #Strip quita espacios innecesarios
+
+        if mp.contains(catalog['artworksArtists'],currentArtist): listArtwork=mp.get(catalog['artworksArtists'],currentArtist)['value']
+        else:listArtwork=lt.newList('SINGLE_LINKED')
+        
+        lt.addLast(listArtwork,artwork)
+        mp.put(catalog['artworksArtists'],currentArtist,listArtwork)
+    
+def addArtist(catalog,artist):
+    id=artist['ConstituentID']
+    mp.put(catalog['artists'],str(id),artist)
+
+
+def addDate(catalog,artist):
+    date = str(artist['BeginDate'].strip())
+
+    if mp.contains(catalog['dateArtists'],date):
+        artistsList = me.getValue(mp.get(catalog['dateArtists'],date))
+
+    else:
+        artistsList = lt.newList('SINGLE_LINKED')
+    lt.addLast(artistsList,artist)
+    mp.put(catalog['dateArtists'],date,artistsList)
+
+def addArtwork(catalog,artwork):
+    lt.addLast(catalog['artworks'],artwork)
+
+
+>>>>>>> ef744929f5f97e4b533864845658d481d902ff63
 def addNation(catalog,artwork):
     mpArtists=catalog['artists']
     artistList=(artwork['ConstituentID'].replace('[','').replace(']','')).split(',')
@@ -194,6 +257,20 @@ def compareArtDates(art1,art2):
     date2 = time.strptime(art2,'%Y-%m-%d')
     return (date1<date2)
 
+def compareArtDates_op2(art1,art2):
+    art1 = art1['DateAcquired']
+    art2 = art2['DateAcquired']
+    return compareArtDates(art1,art2)
+
+def compareArtistsArtworks(art1,art2):
+    cant_obras1 = art1['cant_obras']
+    cant_mediums1 = art1['cant_mediums']
+    cant_obras2 = art2['cant_obras']
+    cant_mediums2 = art2['cant_mediums']
+
+    if cant_obras1 == cant_obras2:
+        return cant_mediums1>cant_mediums2
+    return cant_obras1>cant_obras2
 
 # Funciones de ordenamiento
 def sortDates(keySet):
@@ -206,6 +283,8 @@ def sortArtYears(artworks):
 def sortArtworksDates(datesList):
     sa.sort(datesList,compareArtDates)
 
+def sortArtworksDates_op2(datesList):
+    sa.sort(datesList,compareArtDates_op2)
 
 def sortNation(nationality):
     sa.sort(nationality,compareQuantity)
@@ -214,6 +293,8 @@ def sortNation(nationality):
 def sortArtPrice(artworks):
     msort.sort(artworks,comparePrices)
 
+def sortArtistsArtworks(artists):
+    sa.sort(artists,compareArtistsArtworks)
 
 def masAntiguos(catalog,medium,cant):
     medium=mp.get(catalog['mediums'],medium)
@@ -479,53 +560,77 @@ def precioTransporte(catalog,department):
 
 # Req 6
 #TODO retornar todos los valores que piden en el pdf
-def newExpo(artworks,begin,end,area,catalog):
-    listArtworksEnd=[]
-    actual_area=0
-    total=0
-    list_artworks=lt.newList()
-    for artwork in lt.iterator(artworks):
-        total+=1
-        fecha=artwork['Date']
-        if fecha!='' and fecha!=None:
-            a_sumar=None
-            area_add=None
-            if int(fecha) in range(begin,end+1):
-                circ = check_none(artwork,'Circumference (cm)')
-                diam = check_none(artwork,'Diameter (cm)')
-                prof =  check_none(artwork,'Depth (cm)')
-                height =  check_none(artwork,'Height (cm)')
-                leng =  check_none(artwork,'Length (cm)')
-                width =  check_none(artwork,'Width (cm)')
+def Proli(begin,end,cant_artists ,catalog):
+    dataArtists = catalog['artists']
+    artist_list = mp.keySet(catalog['artworksArtists'])
+    artworksArtist = catalog['artworksArtists']
 
-                if prof==0  and (diam == 0 or circ==0):
-                    if height!=0 and width!=0 and leng==0:
-                        a_sumar=height*width
+    completeArtists=lt.newList('ARRAY_LIST')
 
-                    elif height!=0 and width==0 and leng!=0:
-                        a_sumar=height*leng
+    for artist in lt.iterator (artist_list):
+        data = mp.get(dataArtists,artist)['value']
+   
+        if int(data['BeginDate']) in range(begin,end+1): 
+           
+            tecnica_mayor = None
+            cant_mayor = 0
+            tecnicas = mp.newMap(numelements=2,maptype='CHAINING',loadfactor=0.8)
+            
+            obras = mp.get(artworksArtist, artist)['value']
+            cant_obras = lt.size(obras)
 
-                    elif width!=0 and leng!=0 and height==0:
-                        a_sumar=width*leng
+            for obra in lt.iterator(obras):
+                tecnica = obra['Medium']
+                if mp.contains(tecnicas,tecnica):
+                    cantidad = mp.get(tecnicas,tecnica)['value']+1
+                else:
+                    cantidad = 1
+                if cantidad > cant_mayor:
+                    tecnica_mayor = tecnica 
+                mp.put(tecnicas,tecnica,cantidad)
 
-                    if a_sumar!=None:
-                        if actual_area+a_sumar<=area:
-                            actual_area+=a_sumar
-                            lt.addLast(list_artworks,artwork)
-                        area_add=a_sumar
-                        artwork['Area']=area_add
+            cant_mediums = mp.size(tecnicas)
+
+            data['tecnicaMayor'] = tecnica_mayor
+            data['cant_obras'] = cant_obras
+            data['cant_mediums'] = cant_mediums
+
+            lt.addLast(completeArtists,data)
+
+    sortArtistsArtworks(completeArtists)
+    for artist in lt.iterator(completeArtists):
+        print(artist['DisplayName'],artist['cant_obras'],artist['cant_mediums'])
+
+    #AQUÍ COMIENZA LA PARTE 2 DEL BONO
+    filteredArtworks=lt.newList('ARRAY_LIST')
+    most_prolific_name = lt.firstElement(completeArtists)['DisplayName']
+    most_prolific_id = lt.firstElement(completeArtists)['ConstituentID']
+    bestArtist_maxMedium = lt.firstElement(completeArtists)['tecnicaMayor']
+    artbestartist = mp.get(artworksArtist,most_prolific_id)['value']
+
+    for artwork in lt.iterator(artbestartist):
+        if artwork['Medium'] == bestArtist_maxMedium and type(artwork['DateAcquired'])is str:
+            lt.addLast(filteredArtworks,artwork)
+
+
+    sortArtworksDates_op2(filteredArtworks)
+
+    for art in lt.iterator(filteredArtworks):
+        print(art['DateAcquired']) 
+
     headers = ['ObjectID','Title','Artist(s)','Medium','Dimensions','Date','Department','EstArea (m\u00b2)','Classification','URL']
+    for pos in range(1,cant_artists+1):
+        selectInfo
+    # for pos in range(1,6):
+    #      selectInfo(pos,list_artworks,listArtworksEnd,catalog,False,True)
 
-    for pos in range(1,6):
-         selectInfo(pos,list_artworks,listArtworksEnd,catalog,False,True)
+    # for pos in range(lt.size(list_artworks)-4,lt.size(list_artworks)+1):
+    #      selectInfo(pos,list_artworks,listArtworksEnd,catalog,False,True)
 
-    for pos in range(lt.size(list_artworks)-4,lt.size(list_artworks)+1):
-         selectInfo(pos,list_artworks,listArtworksEnd,catalog,False,True)
-
-    table = tabulate(listArtworksEnd, headers=headers, tablefmt='grid',numalign='center')
+    # table = tabulate(listArtworksEnd, headers=headers, tablefmt='grid',numalign='center')
 
 
-    return (total,lt.size(list_artworks),round(actual_area,3),table)
+    # return (total,lt.size(list_artworks),round(actual_area,3),table)
 #↑↑↑Termina el Req 6↑↑↑
 
 
@@ -539,7 +644,7 @@ def distribuir(elemento,cantidad):
     return str_distribuido
 
 def chkUnknown(origen,clave):
-    if origen[clave]==None or origen[clave]=='' or origen[clave]==5000 : return 'Unknown' #El 5000 se pone para compensar una de las funciones de comparación de años.
+    if origen[clave]==None or origen[clave]=='' or origen[clave]==5000 or origen[clave]=='2100-12-24': return 'Unknown' #El 5000 se pone para compensar una de las funciones de comparación de años.
     else: return origen[clave]
 
 def selectArtist(position,ArtistList,lstArtistEnd):
