@@ -86,7 +86,11 @@ def addartistName(catalog,artwork):
 def buscarArtista(name,catalog):
     artistas = catalog['artistsNames']
     tecnicas = mp.newMap(20,maptype='PROBING',loadfactor=0.6)
-
+    cantidades = lt.newList('ARRAY_LIST')
+    obras_final= lt.newList('ARRAY_LIST')
+    listCant = []
+    listArtworksEnd=[]
+    cant_mayor=0
     if mp.contains(artistas,name):
         obras = mp.get(artistas,name)['value']
         total_obras = lt.size(obras)
@@ -95,11 +99,41 @@ def buscarArtista(name,catalog):
                 cant=mp.get(tecnicas,obra['Medium'])['value']+1
             else:
                 cant = 1
+            if cant>cant_mayor:
+                cant_mayor=cant
+                medio_mayor= obra['Medium']
             mp.put(tecnicas,obra['Medium'],cant)
         
+        for tecnica in lt.iterator(mp.keySet(tecnicas)):
+            cantidad = (mp.get(tecnicas,tecnica)['value'])
+            lt.addLast(cantidades,{'tecnica':tecnica,'value':cantidad})
+
+        sortMediumArtist(cantidades)
+
+        
+        for obra in lt.iterator(obras):
+            if medio_mayor == obra['Medium']:
+                lt.addLast(obras_final,obra)
 
         cant_tecnicas = mp.size(tecnicas)
-        return(total_obras,cant_tecnicas)
+
+
+        for position in range(1,4):
+            selectInfo(position,obras_final,listArtworksEnd,catalog,False,False)
+
+        for position in range(lt.size(obras_final)-3,lt.size(obras_final)):
+            selectInfo(position,obras_final,listArtworksEnd,catalog,False,False)
+        headers = ['ObjectID','Title','Artist(s)','Medium','Dimensions','Date','Department','Classification','URL']
+        tabla=(tabulate(listArtworksEnd, headers=headers, tablefmt='grid',numalign='center'))
+        
+        headers_cantidad = ['Medium Name','Cant']
+        for position in range(1,6):
+            medium = lt.getElement(cantidades,position)
+            size = medium['value']
+            listCant.append([medium['tecnica'],size])
+
+        tabla_cantidad = tabulate(listCant,headers=headers_cantidad,tablefmt='grid',numalign='right')
+        return(total_obras,cant_tecnicas,medio_mayor,tabla_cantidad,tabla)
 
     else:
         return 'No existe un artista con el nombre ingresado.'         
