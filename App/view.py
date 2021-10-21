@@ -40,12 +40,13 @@ operación solicitada
 
 def printMenu():
     print("Bienvenido")
-    print("1- Cargar información en el catálogo")
-    print("2- Listar artistas cronológicamente en un rango de años")
-    print("3- Listar adquisiciones cronológicamente\n")
-    print("4- clasificar las obras de un artista por técnica\n")
+    print("1- Cargar información en el catálogo.")
+    print("2- Listar artistas cronológicamente en un rango de años.")
+    print("3- Listar adquisiciones cronológicamente.")
+    print("4- clasificar las obras de un artista por técnica.")
     print("5- Clasificar obras por nacionalidad de sus creadores")
-    print("6- Calcular costo de transporte de todas las obras a un departamento\n")
+    print("6- Calcular costo de transporte de todas las obras a un departamento.")
+    print("7- Encontrar a los artistas más prolíficos del museo.")
     print("8- las n obras más antiguas para un medio específico.")
     print("9- Cantidad de obras para una nacionalidad específica.")
 def initCatalog():
@@ -170,7 +171,26 @@ while True:
 
 #Requerimiento 6 (BONO)
     elif int(inputs[0]) == 7:
-        print(mp.valueSet(catalog['artworksArtists']))
+        start_time = time.process_time()
+        begin = int(input('Escriba la fecha de inicio: '))
+        end = int(input("Escriba la fecha final: "))
+        cant_artists=int(input('Escriba la cantidad de artistas a mostrar: '))
+        print("\n=================Req No. 6 (BONUS) Inputs ====================\n ")
+        print("Searching artists between {} to {}".format(begin,end))
+        print("Ammount of artists in the Top Ranking: {}\n".format(cant_artists))
+        rta=(controller.proli(begin,end,cant_artists,catalog))
+        print("================ Req No. 6 (BONUS) Answer ================\n")
+        print("There are {} artist born between {} and {}".format(rta[0],begin,end))
+        print("The top {} Most prolific artists in the period are: ".format(cant_artists))
+        print(rta[1])
+        print("\n{} with MoMA ID {} has {} pieces in his/her name at the museum.".format(rta[2],rta[3],rta[4]))
+        print('The first 5 pieces of his/her work sorted by acquired date are: ')
+        print(rta[5])
+        stop_time = time.process_time()
+        elapsed_time_mseg = (stop_time - start_time)*1000
+        print(elapsed_time_mseg)
+        #Aquí es para probar nada más
+        pass
 
 #Cosas de los laboratorios
     elif int(inputs[0]) == 8:
@@ -184,13 +204,7 @@ while True:
         cantidad = controller.cantNationality(catalog,nation)
         print("La cantidad de obras para la nacionalidad {} es {}.".format(nation,cantidad))
 
-    elif int(inputs[0]) == 0:
-        (model.Proli(1914,1939,7,catalog))
-        # print(model.buscarArtista('Louise Bourgeois',catalog)[3])
-        # print(model.buscarArtista('Louise Bourgeois',catalog)[4])
 
-        #Aquí es para probar nada más
-        pass
 
     else:
         sys.exit(0)

@@ -100,3 +100,6 @@ def cronoArtist(catalog,inicio,fin):
 
 def artistPerTecnique(nombre,catalog):
     return model.buscarArtista(nombre,catalog)
+
+def proli(begin,end,cant_artists,catalog):
+    return model.Proli(begin,end,cant_artists,catalog)

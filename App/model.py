@@ -577,8 +577,6 @@ def Proli(begin,end,cant_artists ,catalog):
             lt.addLast(completeArtists,data)
 
     sortArtistsArtworks(completeArtists)
-    for artist in lt.iterator(completeArtists):
-        print(artist['DisplayName'],artist['cant_obras'],artist['cant_mediums'])
 
     #AQUÍ COMIENZA LA PARTE 2 DEL BONO
     filteredArtworks=lt.newList('ARRAY_LIST')
@@ -586,7 +584,7 @@ def Proli(begin,end,cant_artists ,catalog):
     most_prolific_id = lt.firstElement(completeArtists)['ConstituentID']
     bestArtist_maxMedium = lt.firstElement(completeArtists)['tecnicaMayor']
     artbestartist = mp.get(artworksArtist,most_prolific_id)['value']
-
+    artcantBest=lt.size(mp.get(artworksArtist,most_prolific_id)['value'])
     for artwork in lt.iterator(artbestartist):
         if artwork['Medium'] == bestArtist_maxMedium and type(artwork['DateAcquired'])is str:
             lt.addLast(filteredArtworks,artwork)
@@ -594,10 +592,6 @@ def Proli(begin,end,cant_artists ,catalog):
 
     sortArtworksDates_op2(filteredArtworks)
 
-    for art in lt.iterator(filteredArtworks):
-        print(art['DateAcquired']) 
-
-    
     for pos in range(1,6):
         selectInfo(pos,filteredArtworks,listArtworksEnd,catalog,False,False,True)
     headers = ['ObjectID','Title','Artist(s)','Medium','Date','Dimensions','DateAcquired','Department','URL']
@@ -607,22 +601,9 @@ def Proli(begin,end,cant_artists ,catalog):
         selectArtist(pos,completeArtists,listArtistsEnd,True)
     headersArtists = ['ConstituentID','DisplayName','BeginDate','Gender','ArtistBio','Wiki QID','ULAN','Artwork Number','Medium Number','Top medium']
     table_artists = tabulate(listArtistsEnd,headers=headersArtists,tablefmt='grid')
-    print(table)  
-    print('\n')
-    print(table_artists)
-    # for pos in range(1,6):
-    #      selectInfo(pos,list_artworks,listArtworksEnd,catalog,False,True)
-
-    # for pos in range(lt.size(list_artworks)-4,lt.size(list_artworks)+1):
-    #      selectInfo(pos,list_artworks,listArtworksEnd,catalog,False,True)
-
-    # table = tabulate(listArtworksEnd, headers=headers, tablefmt='grid',numalign='center')
-
-
-    # return (total,lt.size(list_artworks),round(actual_area,3),table)
+    
+    return (lt.size(completeArtists),table, most_prolific_name,most_prolific_id,artcantBest,table_artists)
 #↑↑↑Termina el Req 6↑↑↑
-
-
 
 
 
