@@ -83,28 +83,6 @@ def addartistName(catalog,artwork):
             lt.addLast(lista,artwork)
             mp.put(catalog['artistsNames'],name,lista)
 
-<<<<<<< HEAD
-=======
-def buscarArtista(name,catalog):
-    artistas = catalog['artistsNames']
-    tecnicas = mp.newMap(20,maptype='PROBING',loadfactor=0.6)
-
-    if mp.contains(artistas,name):
-        obras = mp.get(artistas,name)['value']
-        total_obras = lt.size(obras)
-        for obra in lt.iterator(obras):
-            if mp.contains(tecnicas,obra['Medium']):
-                cant=mp.get(tecnicas,obra['Medium'])['value']+1
-            else:
-                cant = 1
-            mp.put(tecnicas,obra['Medium'],cant)
-        
-
-        cant_tecnicas = mp.size(tecnicas)
-        return(total_obras,cant_tecnicas)
-
-    else:
-        return 'No existe un artista con el nombre ingresado.'         
 
 
 def addArtworksArtist(catalog,artwork):
@@ -145,7 +123,6 @@ def addArtwork(catalog,artwork):
     lt.addLast(catalog['artworks'],artwork)
 
 
->>>>>>> ef744929f5f97e4b533864845658d481d902ff63
 def addNation(catalog,artwork):
     mpArtists=catalog['artists']
     artistList=(artwork['ConstituentID'].replace('[','').replace(']','')).split(',')
